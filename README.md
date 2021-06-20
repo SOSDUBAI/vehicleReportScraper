@@ -1,6 +1,7 @@
 # vehicleReportScraper
 
 npm i
+install Firefox and geckodriver
 
 Run requiests to api:
 http://localhost:8000/1N4AA6AP2JC394557
