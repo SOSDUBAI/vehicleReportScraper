@@ -33,11 +33,9 @@ async function getDataAboutVehicle(html){
         } 
     }
 
-    console.log(chalk.magenta(`-------- Retirve Data from "Detailed Vehicle History" table ---------`));
     $('table.Table:nth-child(2) > tbody:nth-child(2)').find('tr').each( function(index, element) {
         let detailsItem = {...details};
-        
-        console.log(chalk.cyan(`-------- Retirve Data from row ---------`));
+
         $(this).find('td').each( function(rowIndex, element){
             switch (rowIndex) {
                 case 0:
@@ -57,13 +55,9 @@ async function getDataAboutVehicle(html){
                 
             }            
         });
-        //console.log(JSON.stringify(detailsItem, null, 2))
         data.detailed_vehicle_history.push(detailsItem)
 
     });
-    console.log(chalk.magenta(`-------- Data successfully retrived from "Detailed Vehicle History" table ---------`));
-    //console.log(JSON.stringify(data.detailed_vehicle_history));
-
 
     // Scrpaing Historical Auctions & Incidents
     data.historical_auctions_incidents = [];
@@ -186,10 +180,10 @@ async function getDataAboutVehicle(html){
     })
 
     // Scrape data from Vehicle Specifications section
-    data.vehiclSpecifications  = {};
-    data.vehiclSpecifications.specifications = [];
-    data.vehiclSpecifications.original_equipment = [];
-    data.vehiclSpecifications.included_eatures = [];
+    data.vehicleSpecifications  = {};
+    data.vehicleSpecifications.specifications = [];
+    data.vehicleSpecifications.original_equipment = [];
+    data.vehicleSpecifications.included_features = [];
 
     $('.VehicleSpecifications').find('.VehicleSpecifications-section').each( function (index, element){
         const itemSpecs = {}
@@ -214,7 +208,7 @@ async function getDataAboutVehicle(html){
                 value = result.join(' ');
                 itemSpecs[key.slice(1,-1)] = value;
             })
-            data.vehiclSpecifications.specifications.push(itemSpecs);
+            data.vehicleSpecifications.specifications.push(itemSpecs);
         }
         // second section Specifications
         const originalEquipmentDetails = {}
@@ -241,7 +235,7 @@ async function getDataAboutVehicle(html){
 
                 originalEquipmentDetails[key.slice(1,-1)] = value;
             })
-            data.vehiclSpecifications.original_equipment.push(originalEquipmentDetails);
+            data.vehicleSpecifications.original_equipment.push(originalEquipmentDetails);
         }
 
         // third section Included Features
@@ -250,7 +244,7 @@ async function getDataAboutVehicle(html){
             $(this).find('li').each( function(index, element){
                 includedFeatures.push($(this).text())
             })
-            data.vehiclSpecifications.includedFeatures = includedFeatures;
+            data.vehicleSpecifications.included_features = includedFeatures;
         }
 
         // third section Safety Ratings
@@ -259,11 +253,10 @@ async function getDataAboutVehicle(html){
             // cant retrieve safety ratings for each vehicle
         }
 
-
-
     })
 
-    console.log(chalk.green(JSON.stringify(data, null, 2)));
+    //console.log(chalk.green(JSON.stringify(data, null, 2)));
+    return data;
 }
 
 function removeSpacesAndNewLines(string){
@@ -281,15 +274,24 @@ function removeSpacesAndNewLines(string){
     return result.join(' ')
 }
 
-async function start(VIN) {
+module.exports = async function start(VIN) {
     try {
         console.log(chalk.green("-------- Starting browser ---------"));
 
         const initURL = 'https://www.vehiclehistory.com/'
+
+
+        options = new firefox.Options(
+            {
+                "moz:firefoxOptions": {
+                    "log": {"level": "trace"},
+                    "args": ["-vv"]
+                }
+                
+            }
+        );
         
-        //driver = await new Builder().forBrowser('firefox').setFirefoxOptions(options).build();
-        
-        driver = await new Builder().forBrowser('firefox').build();
+        driver = await new Builder().forBrowser('firefox').setFirefoxOptions(options).build();
         await driver.get(initURL);
         await sleep(500);
         await driver.findElement(By.css('button.VhButton--primary')).click();
@@ -313,6 +315,8 @@ async function start(VIN) {
         console.log(chalk.green(`-------- HTML Dom was successfully retrived ---------`));
 
         await driver.close();
+
+        console.log(chalk.green(`-------- Browser was successfully closed! ---------`));
         return await getDataAboutVehicle(htmlBody)
 
     } catch (error) {
@@ -323,4 +327,4 @@ async function start(VIN) {
 }
 
 
-start('1N4AA6AP4JC367862');
+//start('1N4AA6AP4JC367862');
