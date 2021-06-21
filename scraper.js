@@ -279,17 +279,11 @@ module.exports = async function start(VIN) {
         console.log(chalk.green("-------- Starting browser ---------"));
 
         const initURL = 'https://www.vehiclehistory.com/'
+        
 
 
-        options = new firefox.Options(
-            {
-                "moz:firefoxOptions": {
-                    "log": {"level": "trace"},
-                    "args": ["-vv"]
-                }
-                
-            }
-        );
+        options = new firefox.Options();
+        options = options.headless();
         
         driver = await new Builder().forBrowser('firefox').setFirefoxOptions(options).build();
         await driver.get(initURL);
